@@ -1,4 +1,4 @@
-cilpboard
+Web Clipboard Chrome App
 =========
 
-Clipboard demo
+The web clipboard APIs allows hooking into copy/cut/paste events and rewriting the data. They can be difficult to debug, hence this demo.
