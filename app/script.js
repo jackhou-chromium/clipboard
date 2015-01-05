@@ -23,11 +23,9 @@ function updateLastEvent(lastEvent, clipboardData) {
   }
 
   document.getElementById('last-event').textContent = lastEvent;
-  if (lastEvent === 'paste') {
-    document.getElementById('last-text').textContent = lastText;
-    document.getElementById('last-html').textContent = lastHtml;
-    document.getElementById('last-image').src = URL.createObjectURL(lastImage);
-  }
+  document.getElementById('last-text').textContent = lastText;
+  document.getElementById('last-html').textContent = lastHtml;
+  document.getElementById('last-image').src = URL.createObjectURL(lastImage);
 }
 
 function handlePaste(event) {
@@ -42,31 +40,47 @@ function handleCopy(event) {
     return;
 
   console.log(event.target);
-  if (event.target == document.getElementById('text-field')) {
-    copyText(event);
-    return;
-  } else if (event.target.tagName === 'BODY') {
-    console.log('hit body');
-  }
+  event.clipboardData.setData('text/plain', 'Copied: ' + document.getElementById('text-field').value);
+  event.clipboardData.items.add(dataURItoBlob(canvas.toDataURL()));
+  event.preventDefault();
 
   console.log(event.clipboardData);
   updateLastEvent('copy', event.clipboardData);
 }
 
-function copyText(event) {
-  event.clipboardData.setData('text/plain', 'Copied: ' + document.getElementById('text-field').value);
-  event.preventDefault();
-  updateLastEvent('copy', event.clipboardData);
+// This is effectively <canvas>.toFile().
+function dataURItoBlob(dataURI) {
+    // Convert base64/URLEncoded data component to raw binary data held in a string.
+    var byteString;
+    if (dataURI.split(',')[0].indexOf('base64') >= 0)
+        byteString = atob(dataURI.split(',')[1]);
+    else
+        byteString = unescape(dataURI.split(',')[1]);
+
+    // separate out the mime component
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+    // write the bytes of the string to a typed array
+    var ia = new Uint8Array(byteString.length);
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new File([ia], "hello", {type:mimeString});
 }
 
 function copy(event) {
   document.execCommand('copy');
 }
 
+function paste(event) {
+  document.execCommand('paste');
+}
+
 function handleMouseDown(event) {
   var canvas = document.getElementById('canvas');
   var context = canvas.getContext('2d');
-  context.fillRect(event.offsetX, event.offsetY, 2, 2);
+  context.fillRect(event.offsetX, event.offsetY, 5, 5);
 }
 
 window.onload = function () {
@@ -75,4 +89,5 @@ window.onload = function () {
 
   document.getElementById('canvas').addEventListener('mousedown', handleMouseDown);
   document.getElementById('copy').addEventListener('click', copy);
+  document.getElementById('paste').addEventListener('click', paste);
 }
